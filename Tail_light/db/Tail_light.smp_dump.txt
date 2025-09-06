@@ -1,0 +1,11 @@
+
+State Machine - |Tail_light|Sreg
+Name Sreg.R2 Sreg.R3 Sreg.R1 Sreg.LR3 Sreg.L2 Sreg.L3 Sreg.L1 Sreg.IDLE 
+Sreg.IDLE 0 0 0 0 0 0 0 0 
+Sreg.L1 0 0 0 0 0 0 1 1 
+Sreg.L3 0 0 0 0 0 1 0 1 
+Sreg.L2 0 0 0 0 1 0 0 1 
+Sreg.LR3 0 0 0 1 0 0 0 1 
+Sreg.R1 0 0 1 0 0 0 0 1 
+Sreg.R3 0 1 0 0 0 0 0 1 
+Sreg.R2 1 0 0 0 0 0 0 1 

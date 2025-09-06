@@ -1,0 +1,16 @@
+Fitter Status : Successful - Sat Jul 24 21:30:32 2010
+Quartus II Version : 9.1 Build 304 01/25/2010 SP 1 SJ Full Version
+Revision Name : My_DDS
+Top-level Entity Name : My_DDS
+Family : Cyclone III
+Device : EP3C16F484C6
+Timing Models : Final
+Total logic elements : 6,733 / 15,408 ( 44 % )
+    Total combinational functions : 6,733 / 15,408 ( 44 % )
+    Dedicated logic registers : 143 / 15,408 ( < 1 % )
+Total registers : 143
+Total pins : 58 / 347 ( 17 % )
+Total virtual pins : 0
+Total memory bits : 30,720 / 516,096 ( 6 % )
+Embedded Multiplier 9-bit elements : 4 / 112 ( 4 % )
+Total PLLs : 1 / 4 ( 25 % )

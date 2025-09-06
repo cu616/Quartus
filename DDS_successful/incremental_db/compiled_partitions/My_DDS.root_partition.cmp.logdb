@@ -1,0 +1,4 @@
+v1
+DSP_BALANCING_IMPLEMENTATION,DSP_BLOCKS,DDS_hzh:inst|shumaguan:U4|lpm_mult:Mult0|mult_mft:auto_generated|mac_out4,
+DSP_BALANCING_IMPLEMENTATION,DSP_BLOCKS,DDS_hzh:inst|shumaguan:U4|lpm_mult:Mult0|mult_mft:auto_generated|mac_out2,
+PORT_SWAPPING,PORT_SWAP_TYPE_DSPMULT,DDS_hzh:inst|shumaguan:U4|lpm_mult:Mult0|mult_mft:auto_generated|mac_mult3,

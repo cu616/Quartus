@@ -1,0 +1,16 @@
+module SineROM (
+    input [9:0] address,
+    input clock,
+    output reg [11:0] q
+);
+    reg [11:0] sinTable [0:1023];
+    
+    initial begin
+        // 确保路径正确
+        $readmemb("Sine1024.mif", sinTable); 
+    end
+    
+    always @(posedge clock) begin
+        q <= sinTable[address];
+    end
+endmodule

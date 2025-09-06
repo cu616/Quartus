@@ -1,0 +1,157 @@
+// 2选1数据选择器子模块
+module _2to1MUX(
+    input [7:0] X,Y,
+    input SEL,
+    output [7:0] OUT
+);
+    assign OUT=SEL?X:Y;
+endmodule
+
+// 分频器
+module CP_1kHz_500Hz_1Hz(
+    input CLK_50,nRST,
+    output CP_1kHz,CP_500Hz,CP_1Hz
+);
+    Divider50MHz U0(.CLK_50M(CLK_50),
+                    .nCLR(nRST),
+                    .CLK_1HzOut(CP_1kHz));
+    defparam U0.N=15;
+    defparam U0.CLK_Freq=50000000;
+    defparam U0.OUT_Freq=1000;
+
+    Divider50MHz U1(.CLK_50M(CLK_50),
+                    .nCLR(nRST),
+                    .CLK_1HzOut(CP_500Hz));
+    defparam U1.N=16;
+    defparam U1.CLK_Freq=50000000;
+    defparam U1.OUT_Freq=500;
+
+    Divider50MHz U2(.CLK_50M(CLK_50),
+                    .nCLR(nRST),
+                    .CLK_1HzOut(CP_1Hz));
+    defparam U2.N=25;
+    defparam U2.CLK_Freq=50000000;
+    defparam U2.OUT_Freq=1;
+endmodule
+
+// 数字钟主体电路（含校时和校分）
+module top_clock(
+    input _1Hz,nCR,AdjMinkey,AdjHrkey,
+    output [7:0] Hour,Minute,Second
+);
+    supply1 Vdd;
+    wire MinCP, HrCP;
+    // 分钟、秒计数器
+    counter60 UT1(.Cnt(Second),
+                .nCR(nCR),
+                .En(AdjMinkey),
+                .CP(_1Hz));
+    counter60 UT2(.Cnt(Minute),
+                .nCR(nCR),
+                .En(Vdd),
+                .CP(MinCP));
+    counter24 UT3(.CntH(Hour[7:4]),
+                .CntL(Hour[3:0]),
+                .nCR(nCR),
+                .EN(HrCP));
+    // 产生分钟计数器时钟
+    assign MinCP=AdjHrkey?_1Hz:(Minute,Second);
+    // 产生小时计数器时钟
+    assign HrCP=AdjHrkey?_1Hz:(Minute,Second);
+endmodule
+
+// 仿广播电台正点报时子模块
+module Radio(
+    input _1kHzIN,_500Hz,
+    input [7:0] Minute,Second,
+    output reg ALARM_Radio
+);
+    always @(Minute,Second)
+    begin
+        if(Minute==8'h59)
+            case(Second)
+                8'h55: ALARM_Radio=1'bz;
+                8'h57: ALARM_Radio=_500Hz;
+                8'h59: ALARM_Radio=_1kHzIN;
+                default: ALARM_Radio=1'bz;
+            endcase
+        else
+            ALARM_Radio=1'bz;
+    end
+endmodule
+
+// 定时闹钟模块
+module Bell(
+    input _1kHzIN,_500Hz,_1Hz,SetHrkey,SetMinkey,CtrlBell,
+    input [7:0] Hour,Minute,Second,
+    output ALARM_Clock,
+    output [7:0] Set_Hr,Set_Min
+);
+    supply1 Vdd;
+    wire Hrh_EQU,HrL_EQU,Minh_EQU,MinL_EQU;
+    wire Time_EQU;
+    // 闹钟分钟设置
+    counter60 SU1(.Cnt(Set_Min),
+                .nCR(Vdd),
+                .En(SetMinkey),
+                .CP(_1Hz));
+    // 闹钟小时设置
+    counter24 SU2(.CntH(Set_Hr[7:4]),
+                .CntL(Set_Hr[3:0]),
+                .nCR(Vdd),
+                .EN(SetHrkey),
+                .CP(_1Hz));
+    // 比较闹钟设定时间与当前时间是否相等
+    _4bitcomparator SU4(.EQU(Hrh_EQU),Set_Hr[7:4],Hour[7:4]);
+    _4bitcomparator SU5(.EQU(HrL_EQU),Set_Hr[3:0],Hour[3:0]);
+    _4bitcomparator SU6(.EQU(Minh_EQU),Set_Min[7:4],Minute[7:4]);
+    _4bitcomparator SU7(.EQU(MinL_EQU),Set_Min[3:0],Minute[3:0]);
+    assign Time_EQU=(Hrh_EQU&HrL_EQU&Minh_EQU&MinL_EQU);
+    assign ALARM_Clock=CtrlBell?(Time_EQU&((Second[0]==1'b0)&&_500Hz)):(Time_EQU&((Second[0]==1'b0)&&_1kHzIN));
+endmodule
+
+// 比较器模块
+module _4bitcomparator(EQU,A,B);
+    input [3:0] A,B;
+    output EQU;
+    assign EQU=(A==B);
+endmodule
+
+// 2选1数据选择器模块，用于控制显示器模式的切换
+_2to1MUX MU1(.OUT(LED_Hr),.SEL(Mode),.X(Set_Hr),.Y(Hour));
+_2to1MUX MU2(.OUT(LED_Min),.SEL(Mode),.X(Set_Min),.Y(Minute));
+_2to1MUX MU3(.OUT(LED_Sec),.SEL(Mode),.X(8'hFF),.Y(Second));
+
+module DE2(
+    output [0:0] GPIO,
+    output [6:0] HEX0,HEX1,
+    output [6:0] HEX2,HEX3,
+    output [6:0] HEX4,HEX5,
+    output [6:0] HEX6,HEX7,
+    input CLOCK_50,
+    input [3:0] SW,
+    input [3:0] KEY
+);
+    wire [31:0] IDIG;
+    Complete_Clock CLOCK_Inst(
+        .LED_Hr(IDIG[31:24]),
+        .LED_Min(IDIG[23:16]),
+        .LED_Sec(IDIG[15:8]),
+        .ALARM(GPIO[0]),
+        .AdjMinkey(SW[0]),
+        .AdjHrkey(SW[1]),
+        .SetMinkey(SW[2]),
+        .SetHrkey(SW[3]),
+        .CtrlBell(SW[4]),
+        .Mode(SW[5]),
+        .nCR(KEY[0])
+    );
+    assign HEX0=7'b1111111;
+    assign HEX1=7'b1111111;
+    SEG_LUT Hex2(IDIG[11:8],HEX2);
+    SEG_LUT Hex3(IDIG[15:12],HEX3);
+    SEG_LUT Hex4(IDIG[19:16],HEX4);
+    SEG_LUT Hex5(IDIG[23:20],HEX5);
+    SEG_LUT Hex6(IDIG[27:24],HEX6);
+    SEG_LUT Hex7(IDIG[31:28],HEX7);
+endmodule

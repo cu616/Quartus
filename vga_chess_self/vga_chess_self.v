@@ -1,0 +1,237 @@
+module CLK_RST(//闹钟复位
+    input iCLK_50,
+    input iRst,
+    output oRst,
+    output cClk_VGA,
+    output cClk_dbg
+);
+    assign oRst = iRst;
+    MY_PLL MY_PLL_inst (
+        .inclk0(iCLK_50),
+        .c0(cClk_VGA),
+        .c1(cClk_dbg)
+    );
+endmodule
+
+module VGA_HVCnt(//vga场行计数
+    input iPixclk,
+    input iRst,
+    output reg oHs,
+    output reg oVs,
+    output reg [9:0] oCoord_X,
+    output reg [9:0] oCoord_Y
+);
+    // PARAMETER
+    parameter h_Ta = 10'd96, h_Tb=10'd48, h_Tc=10'd440, h_Td=10'd16, h_Te=10'd800;
+    parameter v_Ta = 10'd2, v_Tb=10'd32, v_Tc=10'd480, v_Td=10'd11, v_Te=10'd525;
+    parameter h_start = h_Ta + h_Tb;
+    parameter v_start = v_Ta + v_Tb;
+    
+    // REG/WIRE 声明
+    reg [9:0] hcnt;
+    reg [9:0] vcnt;
+    
+    always@(posedge iPixclk or negedge iRst)
+    begin
+        if(!iRst) begin hcnt <= 0; oHs <= 0; end
+        else begin
+            // 行计数
+            if (hcnt < h_Te) hcnt <= hcnt + 10'd1;
+            else hcnt <= 0;
+            // 产生行同步信号
+            if (hcnt < h_Ta) oHs <= 0;
+            else oHs <= 1;
+        end
+    end
+    
+    always@(posedge iPixclk or negedge iRst)
+    begin
+        if(!iRst) begin vcnt <= 0; oVs <= 0; end
+        else begin
+            // 场计数
+            if (hcnt == 0) begin
+                if(vcnt < v_Te) vcnt <= vcnt + 10'd1;
+                else vcnt <= 0;
+            end
+            // 产生场同步信号
+            if (vcnt < v_Ta) oVs <= 0;
+            else oVs <= 1;
+        end
+    end
+    
+    // 像素坐标输出逻辑
+    always@(posedge iPixclk or negedge iRst)
+    begin
+        if(!iRst)
+            begin oCoord_X<=0; oCoord_Y <= 0; end
+        else
+            if ( (hcnt >= h_start) && (hcnt < h_start + h_Tc) && (vcnt >= v_start) && (vcnt < v_start + v_Tc ) )
+            begin
+                oCoord_X <= hcnt - h_start;
+                oCoord_Y <= vcnt - v_start;
+            end
+    end
+endmodule
+
+module VGA_BarGen(//彩条生成信号
+    input iPixclk,
+    input iRst,
+    input [9:0] iCoord_X,
+    input [9:0] iCoord_Y,
+    output [23:0] oRGB_x,
+    output [23:0] oRGB_y
+);
+    // REG/WIRE 声明
+    reg [23:0] r_rgb_x;
+    reg [23:0] r_rgb_y;
+    assign oRGB_x = r_rgb_x;
+    assign oRGB_y = r_rgb_y;
+    
+    // 横条纹生成逻辑:条纹颜色由像素横坐标决定
+    always@(posedge iPixclk)
+    begin
+        if(!iRst) r_rgb_x <= {8'b0, 8'b0, 8'b0};
+        else
+            if(iCoord_X < 80)
+                r_rgb_x <= {8'hff, 8'b0, 8'b0};
+            else if(iCoord_X < 160)
+                r_rgb_x <= {8'b0, 8'hff, 8'b0};
+            else if(iCoord_X < 240)
+                r_rgb_x <= {8'b0, 8'b0, 8'hff};
+            else if(iCoord_X < 320)
+                r_rgb_x <= {8'hff, 8'hff, 8'b0};
+            else if(iCoord_X < 400)
+                r_rgb_x <= {8'h0, 8'hff, 8'hff};
+            else if(iCoord_X < 480)
+                r_rgb_x <= {8'hff, 8'b0, 8'hff};
+            else if(iCoord_X < 560)
+                r_rgb_x <= {8'hff, 8'hff, 8'hff};
+            else if(iCoord_X < 640)
+                r_rgb_x <= {8'b0, 8'b0, 8'b0};
+    end
+    
+    // 竖条纹生成逻辑:条纹颜色由像素纵坐标决定
+    always@(posedge iPixclk)
+    begin
+        if(!iRst) r_rgb_y <= {8'b0, 8'b0, 8'b0};
+        else
+            if(iCoord_Y < 60)
+                r_rgb_y <= {8'hff, 8'b0, 8'b0};
+            else if(iCoord_Y < 120)
+                r_rgb_y <= {8'b0, 8'hff, 8'b0};
+            else if(iCoord_Y < 180)
+                r_rgb_y <= {8'b0, 8'b0, 8'hff};
+            else if(iCoord_Y < 240)
+                r_rgb_y <= {8'hff, 8'hff, 8'b0};
+            else if(iCoord_Y < 300)
+                r_rgb_y <= {8'b0, 8'hff, 8'hff};
+            else if(iCoord_Y < 360)
+                r_rgb_y <= {8'hff, 8'b0, 8'hff};
+            else if(iCoord_Y < 420)
+                r_rgb_y <= {8'hff, 8'hff, 8'hff};
+            else if(iCoord_Y < 480)
+                r_rgb_y <= {8'b0, 8'b0, 8'b0};
+    end
+endmodule
+
+module Mux_XY(//显示逻辑切换
+    input iSel,
+    input [23:0] iRGB_x,
+    input [23:0] iRGB_y,
+    output [23:0] oRGB
+);
+    assign oRGB = (iSel == 0) ? iRGB_y : iRGB_x;
+endmodule
+
+module DA_IF(//DA接口
+    input iPixclk,
+    input iHs,
+    input iVs,
+    input [23:0] iRGB,
+    output [7:0] oRed,
+    output [7:0] oGreen,
+    output [7:0] oBlue,
+    output oVGA_SYNC_N,
+    output oVGA_BLANK_N
+);
+    assign oVGA_BLANK_N = iHs & iVs;
+    assign oVGA_SYNC_N = 1'b0;
+    assign oRed = iRGB[23:16];
+    assign oGreen = iRGB[15:8];
+    assign oBlue = iRGB[7:0];
+endmodule
+
+module vga_chess_self(
+    input iCLK_50,
+    input iKEY,
+    input iSW,
+    output oVGA_CLOCK,
+    output oVGA_HS,
+    output oVGA_VS,
+    output oVGA_BLANK_N,
+    output oVGA_SYNC_N,
+    output [7:0] oVGA_R,
+    output [7:0] oVGA_G,
+    output [7:0] oVGA_B
+);
+    // VGA控制器的REG/WIRE声明
+    wire VGA_CLK;
+    wire vga_dbg_clk;
+    wire [23:0] mRGB_X;
+    wire [23:0] mRGB_Y;
+    wire [23:0] mRGB;
+    wire VGA_Read;
+    wire [9:0] rCoord_X;
+    wire [9:0] rCoord_Y;
+    wire rHS;
+    wire rVS;
+    assign oVGA_HS = rHS;
+    assign oVGA_VS = rVS;
+    assign oVGA_CLOCK = VGA_CLK;
+    
+    // 实例引用各个底层模块
+    CLK_RST CLK_RST_inst (
+        .iCLK_50(iCLK_50),
+        .iRst(iKEY),
+        .oRst(rRst),
+        .cClk_VGA(VGA_CLK),
+        .cClk_dbg(vga_dbg_clk)
+    );
+    
+    VGA_HVCnt VGA_HVCnt_inst (
+        .iPixclk(VGA_CLK),
+        .iRst(rRst),
+        .oHs(rHS),
+        .oVs(rVS),
+        .oCoord_X(rCoord_X),
+        .oCoord_Y(rCoord_Y)
+    );
+    
+    VGA_BarGen VGA_BarGen_inst (
+        .iPixclk(VGA_CLK),
+        .iRst(rRst),
+        .iCoord_X(rCoord_X),
+        .iCoord_Y(rCoord_Y),
+        .oRGB_x(mRGB_X),
+        .oRGB_y(mRGB_Y)
+    );
+    
+    Mux_XY Mux_XY_inst (
+        .iSel(iSW),
+        .iRGB_x(mRGB_X),
+        .iRGB_y(mRGB_Y),
+        .oRGB(mRGB)
+    );
+    
+    DA_IF DA_IF_inst (
+        .iPixclk(VGA_CLK),
+        .iRGB(mRGB),
+        .iHs(rHS),
+        .iVs(rVS),
+        .oRed(oVGA_R),
+        .oGreen(oVGA_G),
+        .oBlue(oVGA_B),
+        .oVGA_BLANK_N(oVGA_BLANK_N),
+        .oVGA_SYNC_N(oVGA_SYNC_N)
+    );
+endmodule

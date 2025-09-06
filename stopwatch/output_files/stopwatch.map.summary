@@ -1,0 +1,14 @@
+Analysis & Synthesis Status : Successful - Sat Mar 15 20:02:21 2025
+Quartus Prime Version : 18.1.0 Build 625 09/12/2018 SJ Lite Edition
+Revision Name : stopwatch
+Top-level Entity Name : stopwatch
+Family : Cyclone IV E
+Total logic elements : 241
+    Total combinational functions : 239
+    Dedicated logic registers : 72
+Total registers : 72
+Total pins : 53
+Total virtual pins : 0
+Total memory bits : 0
+Embedded Multiplier 9-bit elements : 0
+Total PLLs : 0

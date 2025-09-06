@@ -1,0 +1,226 @@
+// ===================== 时钟与复位模块 =====================
+module CLK_RST(
+    input iCLK_50,       // 50MHz输入时钟
+    input iRst,          // 复位输入（低有效）
+    output oRst,         // 全局复位输出
+    output cClk_VGA,     // VGA像素时钟（25MHz）
+    output cClk_dbg      // 调试时钟（未使用）
+);
+    assign oRst = iRst;  // 直通复位信号
+    
+    // PLL实例化（生成25MHz像素时钟）
+    MY_PLL MY_PLL_inst (
+        .inclk0(iCLK_50),  // 50MHz输入
+        .c0(cClk_VGA),     // 25MHz输出
+        .c1(cClk_dbg)     // 其他时钟（保留）
+    );
+endmodule
+
+// ===================== VGA时序生成模块 =====================
+module VGA_HVCnt(
+    input iPixclk,        // 25MHz像素时钟
+    input iRst,           // 复位（低有效）
+    output reg oHs,       // 行同步信号
+    output reg oVs,       // 场同步信号
+    output reg [9:0] oCoord_X,  // 有效像素X坐标
+    output reg [9:0] oCoord_Y   // 有效像素Y坐标
+);
+    // 时序参数（640x480@60Hz）
+    parameter h_Ta = 10'd96;  // 行同步脉冲
+    parameter h_Tb = 10'd48;  // 行后沿
+    parameter h_Tc = 10'd640; // 行有效像素
+    parameter h_Te = 10'd800; // 行总计数值
+    
+    parameter v_Ta = 10'd2;   // 场同步脉冲
+    parameter v_Tb = 10'd33;  // 场后沿
+    parameter v_Tc = 10'd480; // 场有效行
+    parameter v_Te = 10'd525; // 场总计数值
+
+    reg [9:0] hcnt;  // 行计数器
+    reg [9:0] vcnt;  // 场计数器
+
+    // 行计数器逻辑
+    always@(posedge iPixclk or negedge iRst) begin
+        if(!iRst) begin
+            hcnt <= 0;
+            oHs <= 0;
+        end else begin
+            if(hcnt < h_Te-1) hcnt <= hcnt + 1;
+            else hcnt <= 0;
+            
+            // 生成行同步信号
+            oHs <= (hcnt < h_Ta) ? 0 : 1;
+        end
+    end
+
+    // 场计数器逻辑
+    always@(posedge iPixclk or negedge iRst) begin
+        if(!iRst) begin
+            vcnt <= 0;
+            oVs <= 0;
+        end else begin
+            if(hcnt == h_Te-1) begin  // 行结束
+                if(vcnt < v_Te-1) vcnt <= vcnt + 1;
+                else vcnt <= 0;
+            end
+            
+            // 生成场同步信号
+            oVs <= (vcnt < v_Ta) ? 0 : 1;
+        end
+    end
+
+    // 有效坐标生成（消隐区处理）
+    always@(posedge iPixclk or negedge iRst) begin
+        if(!iRst) begin
+            oCoord_X <= 0;
+            oCoord_Y <= 0;
+        end else begin
+            // X坐标：行有效区偏移计算
+            oCoord_X <= (hcnt >= (h_Ta + h_Tb)) ? 
+                        (hcnt - (h_Ta + h_Tb)) : 10'h3FF;
+            
+            // Y坐标：场有效区偏移计算
+            oCoord_Y <= (vcnt >= (v_Ta + v_Tb)) ? 
+                        (vcnt - (v_Ta + v_Tb)) : 10'h3FF;
+        end
+    end
+endmodule
+
+// ===================== 国际象棋棋盘生成模块 =====================
+module VGA_Chessboard(
+    input iPixclk,         // 像素时钟
+    input iRst,            // 复位
+    input [9:0] iCoord_X,  // 当前像素X坐标
+    input [9:0] iCoord_Y,  // 当前像素Y坐标
+    output [23:0] oRGB     // RGB888输出
+);
+    // 棋盘参数
+    localparam BOARD_X_START = 80;   // 水平起始位置：(640-480)/2
+    localparam BOARD_Y_START = 0;    // 垂直起始位置
+    localparam SQUARE_SIZE   = 60;   // 格子尺寸
+    localparam BOARD_X_END   = 560;  // 水平结束位置：80+480
+    localparam BOARD_Y_END   = 480;  // 垂直结束位置
+    
+    // 棋盘区域判断
+    wire in_board;
+    assign in_board = (iCoord_X >= BOARD_X_START) && 
+                     (iCoord_X <  BOARD_X_END) &&
+                     (iCoord_Y >= BOARD_Y_START) && 
+                     (iCoord_Y <  BOARD_Y_END);
+    
+    // 棋盘内相对坐标
+    wire [9:0] x_rel = iCoord_X - BOARD_X_START;
+    wire [9:0] y_rel = iCoord_Y - BOARD_Y_START;
+    
+    // 格子坐标计算
+    wire [3:0] x_block = x_rel / SQUARE_SIZE; // 0-7
+    wire [3:0] y_block = y_rel / SQUARE_SIZE; // 0-7
+    
+    // 棋盘格颜色模式（异或生成黑白交替）
+    wire checker_pattern = x_block[0] ^ y_block[0];
+    
+    // 颜色寄存器
+    reg [23:0] rgb_reg;
+    always @(posedge iPixclk) begin
+        if(!iRst) begin
+            rgb_reg <= 24'h0;
+        end else begin
+            if(in_board) begin
+                // 棋盘区：黑白交替
+                rgb_reg <= checker_pattern ? 24'h000000 : 24'hFFFFFF;
+            end else begin
+                // 非棋盘区：红色背景
+                rgb_reg <= 24'hFF0000; 
+            end
+        end
+    end
+    
+    assign oRGB = rgb_reg;
+endmodule
+
+// ===================== D/A接口模块 =====================
+module DA_IF(
+    input iPixclk,
+    input iHs,
+    input iVs,
+    input [23:0] iRGB,
+    output [7:0] oRed,
+    output [7:0] oGreen,
+    output [7:0] oBlue,
+    output oVGA_SYNC_N,
+    output oVGA_BLANK_N
+);
+    // 同步信号处理
+    assign oVGA_SYNC_N = 1'b0;    // 同步信号常低
+    assign oVGA_BLANK_N = iHs & iVs; // 有效显示区域
+    
+    // RGB分量分离
+    assign oRed   = iRGB[23:16];  // R分量
+    assign oGreen = iRGB[15:8];   // G分量
+    assign oBlue  = iRGB[7:0];    // B分量
+endmodule
+
+// ===================== 顶层模块 =====================
+module VGA_BAR(
+    input iCLK_50,        // 50MHz时钟输入
+    input iKEY,           // 复位按键（低有效）
+    output oVGA_HS,       // VGA行同步
+    output oVGA_VS,       // VGA场同步
+    output oVGA_BLANK_N,  // 消隐信号
+    output oVGA_SYNC_N,   // 同步使能
+    output [7:0] oVGA_R,  // 红色分量
+    output [7:0] oVGA_G,  // 绿色分量
+    output [7:0] oVGA_B   // 蓝色分量
+);
+    // 内部信号声明
+    wire VGA_CLK;         // 25MHz像素时钟
+    wire [9:0] coord_X;   // X坐标
+    wire [9:0] coord_Y;   // Y坐标
+    wire [23:0] vga_rgb;  // RGB数据
+    wire vga_hs, vga_vs;  // 同步信号
+    wire sys_rst;         // 系统复位
+    
+    // 时钟与复位生成
+    CLK_RST clk_gen(
+        .iCLK_50(iCLK_50),
+        .iRst(~iKEY),     // 按键低有效转高有效
+        .oRst(sys_rst),
+        .cClk_VGA(VGA_CLK),
+        .cClk_dbg()
+    );
+    
+    // VGA时序生成
+    VGA_HVCnt vga_timing(
+        .iPixclk(VGA_CLK),
+        .iRst(sys_rst),
+        .oHs(vga_hs),
+        .oVs(vga_vs),
+        .oCoord_X(coord_X),
+        .oCoord_Y(coord_Y)
+    );
+    
+    // 棋盘生成模块
+    VGA_Chessboard chessboard(
+        .iPixclk(VGA_CLK),
+        .iRst(sys_rst),
+        .iCoord_X(coord_X),
+        .iCoord_Y(coord_Y),
+        .oRGB(vga_rgb)
+    );
+    
+    // D/A转换接口
+    DA_IF vga_dac(
+        .iPixclk(VGA_CLK),
+        .iHs(vga_hs),
+        .iVs(vga_vs),
+        .iRGB(vga_rgb),
+        .oRed(oVGA_R),
+        .oGreen(oVGA_G),
+        .oBlue(oVGA_B),
+        .oVGA_SYNC_N(oVGA_SYNC_N),
+        .oVGA_BLANK_N(oVGA_BLANK_N)
+    );
+    
+    assign oVGA_HS = vga_hs;
+    assign oVGA_VS = vga_vs;
+endmodule

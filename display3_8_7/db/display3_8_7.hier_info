@@ -1,0 +1,108 @@
+|display3_8_7
+LEDR17 <= sw17.DB_MAX_OUTPUT_PORT_TYPE
+sw17 => LEDR17.DATAIN
+sw17 => 74148:inst7.EIN
+LEDR16 <= sw16.DB_MAX_OUTPUT_PORT_TYPE
+sw16 => LEDR16.DATAIN
+sw16 => 7447:insti.LTN
+HEX0[0] <= 7447:insti.OA
+HEX0[1] <= 7447:insti.OB
+HEX0[2] <= 7447:insti.OC
+HEX0[3] <= 7447:insti.OD
+HEX0[4] <= 7447:insti.OE
+HEX0[5] <= 7447:insti.OF
+HEX0[6] <= 7447:insti.OG
+sw[0] => 74148:inst7.0N
+sw[0] => SW_LED:inst6.SW_In[0]
+sw[1] => 74148:inst7.1N
+sw[1] => SW_LED:inst6.SW_In[1]
+sw[2] => 74148:inst7.2N
+sw[2] => SW_LED:inst6.SW_In[2]
+sw[3] => 74148:inst7.3N
+sw[3] => SW_LED:inst6.SW_In[3]
+sw[4] => 74148:inst7.4N
+sw[4] => SW_LED:inst6.SW_In[4]
+sw[5] => 74148:inst7.5N
+sw[5] => SW_LED:inst6.SW_In[5]
+sw[6] => 74148:inst7.6N
+sw[6] => SW_LED:inst6.SW_In[6]
+sw[7] => 74148:inst7.7N
+sw[7] => SW_LED:inst6.SW_In[7]
+LEDG[0] <= 7447:insti.RBON
+LEDG[1] <= 74148:inst7.EON
+LEDG[2] <= 74148:inst7.GSN
+LEDR[0] <= SW_LED:inst6.LED_Out[0]
+LEDR[1] <= SW_LED:inst6.LED_Out[1]
+LEDR[2] <= SW_LED:inst6.LED_Out[2]
+LEDR[3] <= SW_LED:inst6.LED_Out[3]
+LEDR[4] <= SW_LED:inst6.LED_Out[4]
+LEDR[5] <= SW_LED:inst6.LED_Out[5]
+LEDR[6] <= SW_LED:inst6.LED_Out[6]
+LEDR[7] <= SW_LED:inst6.LED_Out[7]
+
+
+|display3_8_7|7447:insti
+OG <= 87.DB_MAX_OUTPUT_PORT_TYPE
+C => 25.IN0
+LTN => 25.IN1
+LTN => 27.IN1
+LTN => 29.IN1
+LTN => 13.IN5
+LTN => 38.IN3
+BIN => 37.IN0
+B => 27.IN0
+D => 14.IN0
+A => 29.IN0
+RBIN => 15.IN0
+OF <= 86.DB_MAX_OUTPUT_PORT_TYPE
+OE <= 85.DB_MAX_OUTPUT_PORT_TYPE
+RBON <= 13.DB_MAX_OUTPUT_PORT_TYPE
+OD <= 84.DB_MAX_OUTPUT_PORT_TYPE
+OC <= 83.DB_MAX_OUTPUT_PORT_TYPE
+OB <= 82.DB_MAX_OUTPUT_PORT_TYPE
+OA <= 81.DB_MAX_OUTPUT_PORT_TYPE
+
+
+|display3_8_7|74148:inst7
+EON <= 83.DB_MAX_OUTPUT_PORT_TYPE
+1N => 83.IN0
+1N => 103.IN0
+2N => 83.IN1
+2N => 55.IN0
+3N => 83.IN2
+3N => 57.IN0
+0N => 83.IN3
+4N => 83.IN4
+4N => 62.IN0
+5N => 83.IN5
+5N => 106.IN0
+6N => 83.IN6
+6N => 104.IN0
+7N => 107.IN0
+7N => 105.IN0
+EIN => 65.IN0
+GSN <= 84.DB_MAX_OUTPUT_PORT_TYPE
+A0N <= 8.DB_MAX_OUTPUT_PORT_TYPE
+A1N <= 109.DB_MAX_OUTPUT_PORT_TYPE
+A2N <= 9.DB_MAX_OUTPUT_PORT_TYPE
+
+
+|display3_8_7|SW_LED:inst6
+SW_In[0] => LED_Out[0].DATAIN
+SW_In[1] => LED_Out[1].DATAIN
+SW_In[2] => LED_Out[2].DATAIN
+SW_In[3] => LED_Out[3].DATAIN
+SW_In[4] => LED_Out[4].DATAIN
+SW_In[5] => LED_Out[5].DATAIN
+SW_In[6] => LED_Out[6].DATAIN
+SW_In[7] => LED_Out[7].DATAIN
+LED_Out[0] <= SW_In[0].DB_MAX_OUTPUT_PORT_TYPE
+LED_Out[1] <= SW_In[1].DB_MAX_OUTPUT_PORT_TYPE
+LED_Out[2] <= SW_In[2].DB_MAX_OUTPUT_PORT_TYPE
+LED_Out[3] <= SW_In[3].DB_MAX_OUTPUT_PORT_TYPE
+LED_Out[4] <= SW_In[4].DB_MAX_OUTPUT_PORT_TYPE
+LED_Out[5] <= SW_In[5].DB_MAX_OUTPUT_PORT_TYPE
+LED_Out[6] <= SW_In[6].DB_MAX_OUTPUT_PORT_TYPE
+LED_Out[7] <= SW_In[7].DB_MAX_OUTPUT_PORT_TYPE
+
+

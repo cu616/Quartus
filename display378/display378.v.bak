@@ -1,0 +1,47 @@
+
+module SEG7_LUT(  
+	input [2:0]id,
+	output reg[6:0]os
+);
+always@(id)
+begin
+case(id)
+3'b000:os=7'b100_0000;
+3'b001:os=7'b111_1001;
+3'b010:os=7'b010_0100;
+3'b011:os=7'b011_0000;
+3'b100:os=7'b001_1001;
+3'b101:os=7'b001_0010;
+3'b110:os=7'b000_0010;
+3'b111:os=7'b111_1000;
+endcase
+end
+endmodule
+
+module display378(
+		input		[2: 0]	I,	//input 3 bits signal
+		input			en,	//enable signal
+		output	reg	[7: 0]	Y,	//output 8 bits signal
+		output reg GS,
+		output 	reg EO,
+		output reg [6:0]hex
+);
+integer k;
+integer t;
+always @(I or en)begin
+	t=0;
+	GS=1'b0;
+	EO=1'b0;
+	Y = 8'b0000_0000;
+	if(en)begin
+		Y=3'b000;
+		GS=1;
+		EO=0;
+	for(k=7;k>=0&&t;k=k-1)begin
+			if(I[k])begin Y=k;GS=0;EO=1;t=0;SEG7_LUT (hex,I);  end
+				end
+		end
+		  end
+
+endmodule
+

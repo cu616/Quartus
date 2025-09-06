@@ -1,0 +1,14 @@
+Analysis & Synthesis Status : Successful - Wed Mar 12 21:40:55 2025
+Quartus Prime Version : 18.1.0 Build 625 09/12/2018 SJ Lite Edition
+Revision Name : Tail_light
+Top-level Entity Name : Tail_light
+Family : Cyclone IV E
+Total logic elements : 733
+    Total combinational functions : 532
+    Dedicated logic registers : 525
+Total registers : 525
+Total pins : 11
+Total virtual pins : 0
+Total memory bits : 6,144
+Embedded Multiplier 9-bit elements : 0
+Total PLLs : 0

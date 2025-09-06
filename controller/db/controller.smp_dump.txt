@@ -1,0 +1,7 @@
+
+State Machine - |controller|CurrentState
+Name CurrentState.11 CurrentState.10 CurrentState.01 CurrentState.00 
+CurrentState.00 0 0 0 0 
+CurrentState.01 0 0 1 1 
+CurrentState.10 0 1 0 1 
+CurrentState.11 1 0 0 1 

@@ -1,0 +1,14 @@
+Analysis & Synthesis Status : Successful - Sat Mar 08 19:26:08 2025
+Quartus Prime Version : 18.1.0 Build 625 09/12/2018 SJ Lite Edition
+Revision Name : flow_led_combine
+Top-level Entity Name : flow_led_combine
+Family : Cyclone IV E
+Total logic elements : 82
+    Total combinational functions : 82
+    Dedicated logic registers : 40
+Total registers : 40
+Total pins : 12
+Total virtual pins : 0
+Total memory bits : 0
+Embedded Multiplier 9-bit elements : 0
+Total PLLs : 0

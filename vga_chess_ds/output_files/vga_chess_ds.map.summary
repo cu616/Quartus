@@ -1,0 +1,14 @@
+Analysis & Synthesis Status : Successful - Mon Mar 10 23:40:47 2025
+Quartus Prime Version : 18.1.0 Build 625 09/12/2018 SJ Lite Edition
+Revision Name : vga_chess_ds
+Top-level Entity Name : vga_chess_ds
+Family : Cyclone IV E
+Total logic elements : 211
+    Total combinational functions : 211
+    Dedicated logic registers : 20
+Total registers : 20
+Total pins : 7
+Total virtual pins : 0
+Total memory bits : 0
+Embedded Multiplier 9-bit elements : 0
+Total PLLs : 0

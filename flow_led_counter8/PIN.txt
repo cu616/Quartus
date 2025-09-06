@@ -1,0 +1,14 @@
+to , location
+mod , PIN_AB27
+flow_led[7] , PIN_H19
+flow_led[6] , PIN_J19
+flow_led[5] , PIN_E18
+flow_led[4] , PIN_F18
+flow_led[3] , PIN_F21
+flow_led[2] , PIN_E19
+flow_led[1] , PIN_F19
+flow_led[0] , PIN_G19
+clk_50m , PIN_Y2
+rst_n , PIN_Y23
+flow_led_stop , PIN_Y24
+//计数器流水灯sw17给0 sw16 停止 sw4mod

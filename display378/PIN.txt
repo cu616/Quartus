@@ -1,0 +1,23 @@
+to , locatioN
+en , PIN_AC25
+EO, PIN_G19
+GS , PIN_F19
+I[0],PIN_AB28
+I[1],PIN_AC28
+I[2],PIN_AC27
+I[3],PIN_AD27
+I[4],PIN_AB27
+I[5],PIN_AC26
+I[6],PIN_AD26
+I[7],PIN_AB26
+Y[0],PIN_E21
+Y[1],PIN_E22
+Y[2],PIN_E25
+HEX[6] , PIN_H22
+HEX[5] , PIN_J22
+HEX[4] , PIN_L25
+HEX[3] , PIN_L26
+HEX[2] , PIN_E17
+HEX[1] , PIN_F22
+HEX[0] , PIN_G18
+//译码电路Y0~7为sw0 7 en为sw8 y为绿led eogs为red01 

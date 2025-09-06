@@ -1,0 +1,47 @@
+module flow_led_counter8(
+ input clk_50m,
+ input rst_n,
+ input flow_led_stop,
+input mod,
+ output wire [7: 0] flow_led
+);
+wire [ 2: 0] cnt_led;
+counter8 counter_1(
+ .clk_50m(clk_50m), 
+ .rst_n(rst_n), 
+ .cnt_stop(flow_led_stop), 
+.mod(mod),
+ .cnt_led(cnt_led) 
+);
+e3to8 decoder_1(
+ .a(cnt_led), 
+ .en(rst_n), 
+ .Y(flow_led) 
+);
+endmodule
+
+module e3to8(
+		input		[ 2: 0]		a,	
+		input					en,	
+		output	reg	[ 7: 0]		Y	
+);
+always @(*)begin
+	if(en)begin
+		case(a[2:0])//decoder3_8
+			3'b000: Y = 8'b0000_0001;
+			3'b001: Y = 8'b0000_0010;
+			3'b010: Y = 8'b0000_0100;
+			3'b011: Y = 8'b0000_1000;
+			3'b100: Y = 8'b0001_0000;
+			3'b101: Y = 8'b0010_0000;
+			3'b110: Y = 8'b0100_0000;
+			3'b111: Y = 8'b1000_0000;
+			default:Y = 8'b1111_1111;
+		endcase
+	end
+	else begin
+		Y = 8'b1111_1111;
+	end
+end
+
+endmodule

@@ -1,0 +1,7 @@
+
+State Machine - |stopwatch|state
+Name state.PAUSED_R state.PAUSED_S state.RUNNING state.IDLE 
+state.IDLE 0 0 0 0 
+state.RUNNING 0 0 1 1 
+state.PAUSED_S 0 1 0 1 
+state.PAUSED_R 1 0 0 1 
