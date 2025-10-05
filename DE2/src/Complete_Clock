@@ -1,0 +1,82 @@
+module Complete_Clock(
+    input CLK_50, nCR,
+    input AdjMinkey, AdjHrkey, // 校小时、校分钟
+    input SetHrkey, SetMinkey, // 闹钟小时、分钟的设定值
+    input CtrlBell, Mode,
+    output ALARM,
+    output [7:0] LED_Hr, LED_Min, LED_Sec
+);
+
+wire [7:0] Hour, Minute, Second;      // 小时、分钟、秒钟的输出值
+wire [7:0] Set_Hr, Set_Min;
+wire _1Hz, _500Hz, _1kHzIN;
+wire ALARM_Clock;
+wire ALARM_Radio;
+
+// 分频器
+CP_1kHz_500Hz_1Hz U0(
+    .CLK_50(CLK_50),
+    .CP_1kHz(_1kHzIN),
+    .CP_500Hz(_500Hz),
+    .CP_1Hz(_1Hz)
+);
+
+// 时钟主体电路（含计时和校时）
+top_clock U1(
+    .Hour(Hour),
+    .Minute(Minute),
+    .Second(Second),
+    ._1Hz(_1Hz),
+    .nCR(nCR),
+    .AdjMinkey(AdjMinkey),
+    .AdjHrkey(AdjHrkey)
+);
+
+// 仿广播电台报时
+Radio U2(
+    .ALARM_Radio(ALARM_Radio),
+    .Minute(Minute),
+    .Second(Second),
+    ._1kHzIN(_1kHzIN),
+    ._500Hz(_500Hz)
+);
+
+// 闹钟子模块
+Bell U3(
+    .ALARM_Clock(ALARM_Clock),
+    .Set_Hr(Set_Hr),
+    .Set_Min(Set_Min),
+    .Hour(Hour),
+    .Minute(Minute),
+    .Second(Second),
+    ._1kHzIN(_1kHzIN),
+    ._500Hz(_500Hz),
+    ._1Hz(_1Hz),
+    .SetHrkey(SetHrkey),
+    .SetMinkey(SetMinkey),
+    .CtrlBell(CtrlBell)
+);
+
+// 控制扬声器子模块
+assign ALARM = ALARM_Radio | ALARM_Clock;
+
+// 选择数码管的显示内容（时钟/闹钟）
+_2to1MUX MU1(
+    .OUT(LED_Hr),
+    .SEL(Mode),
+    .X(Set_Hr),
+    .Y(Hour)
+);
+_2to1MUX MU2(
+    .OUT(LED_Min),
+    .SEL(Mode),
+    .X(Set_Min),
+    .Y(Minute)
+);
+_2to1MUX MU3(
+    .OUT(LED_Sec),
+    .SEL(Mode),
+    .X(8'hFF),
+    .Y(Second)
+);
+endmodule

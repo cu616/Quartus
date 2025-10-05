@@ -1,8 +1,6 @@
-
-
-module SEG7_LUT(  
-	input [2:0]id,
-	output reg[6:0]os
+module SEG7_LUT(//七段共阳极显示译码器
+	input [2:0]id,//iDIG
+	output reg[6:0]os//oSEGMENT
 );
 always@(id)
 begin
@@ -18,7 +16,6 @@ case(id)
 endcase
 end
 endmodule
-
 module display378(
 		input		[7: 0]	I,
 		input			en,	
@@ -56,5 +53,6 @@ always @(I or en)begin
 		  end
 
 endmodule
+
 
 

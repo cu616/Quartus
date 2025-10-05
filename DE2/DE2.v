@@ -7,6 +7,7 @@ module _2to1MUX(
     assign OUT = SEL ? X : Y;
 endmodule
 
+//本工程是基于DE2-115的多功能数字钟
 module DE2(
     output [0:0] GPIO,       // 用于外接扬声器驱动电路
     output [6:0] HEX0, HEX1,
@@ -301,6 +302,7 @@ module top_clock(
     // 小时计数器时钟
     assign HrCP = AdjHrkey ? _1Hz : (Minute == 8'h59);
 endmodule
+
 module SEG_LUT(  
 	input [3:0]iDIG,
 	output reg[6:0]oSEG

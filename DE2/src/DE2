@@ -1,0 +1,37 @@
+//本工程是基于DE2-115的多功能数字钟
+module DE2(
+    output [0:0] GPIO,       // 用于外接扬声器驱动电路
+    output [6:0] HEX0, HEX1,
+    output [6:0] HEX2, HEX3,  // 显示秒钟个位和十位
+    output [6:0] HEX4, HEX5,  // 显示分钟个位和十位
+    output [6:0] HEX6, HEX7,  // 显示小时个位和十位
+    input CLOCK_50,           // 50MHz时钟输入
+    input [5:0] SW,           // 控制信号
+    input [0:0] KEY           // 按键KEY0
+);
+    wire [31:0] iDIG;         // 七段显示译码器的输入
+
+    Complete_Clock CLOCK_Inst(
+        .LED_Hr(iDIG[31:24]),  // 小时（BCD码）
+        .LED_Min(iDIG[23:16]), // 分钟（BCD码）
+        .LED_Sec(iDIG[15:8]),  // 秒钟（BCD码）
+        .ALARM(GPIO[0]),       // 输出至扬声器驱动电路
+        .CLK_50(CLOCK_50),    // 50MHz输入
+        .AdjMinkey(SW[0]),    // 校正分钟SW0
+        .AdjHrkey(SW[1]),     // 校正小时SW1
+        .SetHrkey(SW[2]),     // 设置闹钟的小时SW2
+        .SetMinkey(SW[3]),    // 设置闹钟的分钟SW3
+        .Mode(SW[4]),         // 显示模式SW4:0，正常计时；1，闹钟
+        .nCR(KEY[0])          // 清零
+    );
+
+    assign HEX0=7'b1111111;    // 不使用（让其不显示）
+    assign HEX1=7'b1111111;
+
+    SEG_LUT Hex2(iDIG[11:8], HEX2);  // 显示秒钟个位
+    SEG_LUT Hex3(iDIG[15:12], HEX3);  // 显示秒钟十位
+    SEG_LUT Hex4(iDIG[19:16], HEX4);  // 显示分钟个位
+    SEG_LUT Hex5(iDIG[23:20], HEX5);  // 显示分钟十位
+    SEG_LUT Hex6(iDIG[27:24], HEX6);  // 显示小时个位
+    SEG_LUT Hex7(iDIG[31:28], HEX7);  // 显示小时十位
+endmodule

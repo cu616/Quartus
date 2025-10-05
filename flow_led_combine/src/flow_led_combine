@@ -1,0 +1,24 @@
+module flow_led_combine(
+ input clk_50m, //输入 50MHz 系统时钟
+ input rst_n, //输入低电平复位信号
+ input flow_led_stop, //输入流水灯暂停信号
+ input sw_change, //2 选 1 选择信号
+ output wire [7: 0] flow_led //16 位流水灯输出信号
+);//定义线型变量
+wire [7: 0] flow_led_cnt; //计数器实现流水灯模块输出
+wire [7: 0] flow_led_shift_reg; 
+assign flow_led = sw_change ? flow_led_cnt : flow_led_shift_reg;
+flow_led_counter8 flow_led_counter8_inst(
+ .clk_50m(clk_50m), //输入 50MHz 系统时钟
+ .rst_n(rst_n), //输入低电平复位信号
+ .flow_led_stop(flow_led_stop), //输入流水灯暂停信号
+ .flow_led(flow_led_cnt) //输出 8 位流水灯
+);
+
+led_register(
+ .clk_50m(clk_50m), //输入 50MHz 系统时钟
+ .rst_n(rst_n), //输入低电平复位信号
+ .flow_led_stop(flow_led_stop), //输入流水灯暂停信号
+ .flow_led(flow_led_shift_reg) //8 位流水灯输出信号
+);
+endmodule

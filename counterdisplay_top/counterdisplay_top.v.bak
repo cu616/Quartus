@@ -1,0 +1,21 @@
+module CounterDisplay_top (KEY, SW, LEDG, HEX1, HEXO);
+input [1:0]KEY; 
+input [2:0]SW; 
+output [3:0]LEDG; //绿色发光二极管
+output [6:0]HEX0; //七段数字显示器0 
+output [6:0]HEX1; //七段数字显示器1 
+wire [3:0]BCD1, BCDO, Q; //中间变量
+wire CP, CLR_, EN; //中间变量
+assign CP=KEY[0]; //用KEY0作为CP 
+assign CLR =KEY[1]; //用KEY1作为CLR 
+assign EN=SW[2]; //用sw2作为EN 
+assign LEDG=Q; //计数器输出送绿色LED显示
+Var_Counter B0 (CP, CLR,EN, SW, Q); //实例引用变模计数器子模块
+_4bitBIN2bcd B1 (.Bin(Q), //实例引用子模块4bitBIN2bcd 
+.BCD1 ( BCD1 ), // 4bitBIN2bed (Bin, BCD1,BCD0) 
+BCDO ( BCDO )); 
+SEG7_LUT u0 (.oSEG( HEX0 ), 
+.iDIG ( BCD0) ); 
+SEG7_LUT u1 (HEX1, BCD1);
+ endmodule 
+//实例引用子模块SEG7LUT (oSEG,iDIG) /用显示器HEX0显示个位BCD数1/用显示器HEX1显示十位BCD数

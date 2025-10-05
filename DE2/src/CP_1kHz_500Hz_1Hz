@@ -1,0 +1,31 @@
+module CP_1kHz_500Hz_1Hz(
+    input CLK_50, nRST,
+    output CP_1kHz, CP_500Hz, CP_1Hz
+);
+    Divider50MHz U0(
+        .CLK_50M(CLK_50),
+        .nCLR(nRST),
+        .CLK_1HzOut(CP_1Hz)
+    );
+    defparam U0.N=25;
+    defparam U0.CLK_Freq=50000000;
+    defparam U0.OUT_Freq=1;
+
+    Divider50MHz U1(
+        .CLK_50M(CLK_50),
+        .nCLR(nRST),
+        .CLK_1HzOut(CP_500Hz)
+    );
+    defparam U1.N=16;
+    defparam U1.CLK_Freq=50000000;
+    defparam U1.OUT_Freq=500;
+
+    Divider50MHz U2(
+        .CLK_50M(CLK_50),
+        .nCLR(nRST),
+        .CLK_1HzOut(CP_1kHz)
+    );
+    defparam U2.N=15;
+    defparam U2.CLK_Freq=50000000;
+    defparam U2.OUT_Freq=1000;
+endmodule

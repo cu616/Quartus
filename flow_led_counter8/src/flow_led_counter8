@@ -1,0 +1,21 @@
+module flow_led_counter8(
+ input clk_50m,
+ input rst_n,
+ input flow_led_stop,
+input mod,
+ output wire [7: 0] flow_led
+);
+wire [ 2: 0] cnt_led;
+counter8 counter_1(
+ .clk_50m(clk_50m), 
+ .rst_n(rst_n), 
+ .cnt_stop(flow_led_stop), 
+.mod(mod),
+ .cnt_led(cnt_led) 
+);
+e3to8 decoder_1(
+ .a(cnt_led), 
+ .en(rst_n), 
+ .Y(flow_led) 
+);
+endmodule

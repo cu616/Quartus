@@ -1,0 +1,57 @@
+module counter8(
+ input clk_50m, 
+ input rst_n, //归零位
+ input cnt_stop, //暂停位
+ input mod,//为1时计数器递增，为0递减
+ output reg [ 2: 0] cnt_led 
+);
+
+reg [24:0] cnt_50m ; 
+reg clk_1hz;
+
+always @(posedge clk_50m or negedge rst_n)begin//分频器
+ if(!rst_n)begin
+ cnt_50m <= 25'd0;
+ end
+ else if(cnt_50m == 25'd24_999_999)begin
+ cnt_50m <= 25'd0;
+ end
+ else begin
+ cnt_50m <= cnt_50m + 1'd1; 
+ end
+end
+
+always @(posedge clk_50m or negedge rst_n)begin
+ if(!rst_n)begin
+ clk_1hz <= 1'b0;
+ end
+ else if(cnt_50m == 25'd24999999)begin 
+ clk_1hz <= ~clk_1hz;
+ end
+end
+
+always @(posedge clk_1hz or negedge rst_n)begin
+ if(!rst_n)begin
+ cnt_led <= 3'd0;
+ end
+ else if(cnt_stop)begin
+ cnt_led <= cnt_led;
+ end
+else if(mod)begin
+  if(cnt_led == 3'd111)begin 
+        cnt_led <= 3'd0;
+    end
+     else begin
+    cnt_led <= cnt_led + 1'd1;
+    end
+ end
+ else if(~mod)begin
+ if(cnt_led == 3'd000)begin 
+ cnt_led <= 3'd111;
+ end
+ else begin
+ cnt_led <= cnt_led - 1'd1;
+ end
+end
+end
+endmodule

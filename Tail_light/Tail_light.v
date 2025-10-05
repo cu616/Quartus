@@ -1,18 +1,21 @@
+//汽车尾灯，左转信号左边流水灯，右转右边流水灯，HAZ急停时两边一起闪
 module Tail_light (CLK,RST,LEFT,RIGHT,HAZ,LA,LB,LC,RA,RB,RC ) ;
 input CLK,RST,LEFT,RIGHT,HAZ;
 output reg LA,LB,LC,RA,RB, RC;
 reg[2:0]Sreg,Snext;
-
 parameter [2:0]IDLE=3'b000,L1=3'b001,L2=3'b011,L3=3'b010,
 					R1=3'b101,R2=3'b111,R3=3'b110,LR3=3'b100;
 wire CLK_1HzOut;
 Divider50MHz uD50(CLK, RST, CLK_1HzOut);
+
 always@(posedge CLK_1HzOut or negedge RST)//时序逻辑:存储状态
 begin
 if(~RST)Sreg <= IDLE;
 else Sreg <= Snext;
 end
-always@ (LEFT,RIGHT,HAZ,Sreg)begin
+
+always@ (LEFT,RIGHT,HAZ,Sreg)
+begin
 case(Sreg)IDLE:if(HAZ|(LEFT&RIGHT))Snext=LR3;
 			else if(RIGHT)Snext= R1;
 			else if(LEFT)Snext= L1;
@@ -22,12 +25,14 @@ case(Sreg)IDLE:if(HAZ|(LEFT&RIGHT))Snext=LR3;
 			R3:Snext= IDLE;
 			L1:Snext =L2;
 			L2:Snext= L3;
-				L3:Snext= IDLE;
+			L3:Snext= IDLE;
 			LR3:Snext= IDLE;
 			default:Snext = IDLE;
 endcase
 end
-always @(Sreg)begin
+
+always @(Sreg)
+begin
 case(Sreg)
 IDLE:{LC,LB,LA,RA,RB,RC}= 6'b00_0000;
 R1:{LC,LB,LA,RA,RB,RC}= 6'b00_0100;

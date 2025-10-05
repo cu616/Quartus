@@ -1,3 +1,4 @@
+//计数器实现流水灯与移位运算符实现的流水灯结合，用2选1选择器切换模式
 module flow_led_combine(
  input clk_50m, //输入 50MHz 系统时钟
  input rst_n, //输入低电平复位信号
@@ -23,17 +24,17 @@ led_register(
 );
 endmodule
 
-module led_register(
+module led_register(//移位流水灯
  input clk_50m, 
  input rst_n, 
  input flow_led_stop, 
  output reg [7: 0] flow_led
 );
 
-reg [24:0] cnt_50m; 
+reg [24:0] cnt_50m; //计数，用于分频1hz
 reg clk_1hz;
 
-reg mod;
+reg mod;//为1正向移动，为0反向
 always @(posedge clk_50m or negedge rst_n)begin
  if(!rst_n)begin
  cnt_50m <= 25'd0;
@@ -63,7 +64,7 @@ end
  else if(flow_led_stop)begin
  flow_led <= flow_led; 
  end
- else  if(mod&&(flow_led!=8'b1000_0000) )begin
+ else  if(mod&&(flow_led!=8'b1000_0000) )begin//令人难绷的四分支判断，总之就是灯到了边缘会反向移动（改变mod）
  flow_led <= {flow_led[6:0], flow_led[7]}; 
 end
 else if(mod&&(flow_led==8'b1000_0000) )
@@ -81,7 +82,7 @@ end
  end
 
 endmodule
-module flow_led_counter8(
+module flow_led_counter8(//计数流水灯
  input clk_50m,
  input rst_n,
  input flow_led_stop,

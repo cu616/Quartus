@@ -1,0 +1,33 @@
+module top_clock(
+    input _1Hz, nCR, AdjMinkey, AdjHrkey,
+    output [7:0] Hour, Minute, Second
+);
+    supply1 Vdd;
+    wire MinCP, HrCP;
+
+    // 时分秒计数器
+    counter60 UT1(
+        .Cnt(Second),
+        .nCR(nCR),
+        .En(Vdd),
+        .CP(_1Hz)
+    );
+    counter60 UT2(
+        .Cnt(Minute),
+        .nCR(nCR),
+        .En(Vdd),
+        .CP(MinCP)
+    );
+    counter24 UT3(
+        .CntH(Hour[7:4]),
+        .CntL(Hour[3:0]),
+        .nCR(nCR),
+        .EN(Vdd),
+        .CP(HrCP)
+    );
+
+    // 分钟计数器时钟
+    assign MinCP = AdjMinkey ? _1Hz : (Second == 8'h59);
+    // 小时计数器时钟
+    assign HrCP = AdjHrkey ? _1Hz : (Minute == 8'h59);
+endmodule

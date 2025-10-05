@@ -1,0 +1,19 @@
+// 仿广播电台正点报时模块
+module Radio(
+    input _1kHzIN, _500Hz,
+    input [7:0] Minute, Second,
+    output reg[7:0]  ALARM_Radio
+);
+    always @(Minute, Second)
+    begin
+        if (Minute == 8'h59)
+            case (Second)
+                8'h51, 8'h53, 8'h55, 8'h57, 8'h59:
+                    ALARM_Radio = _1kHzIN;
+                default:
+                    ALARM_Radio = 1'b0;
+            endcase
+        else
+            ALARM_Radio = 1'b0;
+    end
+endmodule
